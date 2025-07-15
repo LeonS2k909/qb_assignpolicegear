@@ -2,12 +2,19 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
 local cachedClothing = nil -- store civilian outfit before police gear
+local currentJob = nil
 
 -- Save current outfit for restoring later
 local function CacheCurrentOutfit()
-    TriggerEvent('qb-clothing:client:getOutfit', function(outfit)
-        cachedClothing = outfit
-        print("[DEBUG] Civilian outfit cached.")
+    TriggerEvent('qb-clothing:client:saveOutfit', function(success)
+        if success then
+            TriggerEvent('qb-clothing:client:getOutfit', function(outfit)
+                cachedClothing = outfit
+                print("[DEBUG] Civilian outfit cached.")
+            end)
+        else
+            print("[DEBUG] Failed to save outfit before caching.")
+        end
     end)
 end
 
@@ -53,24 +60,31 @@ end
 
 -- Apply or revert outfits based on job
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
+    if currentJob == nil then
+        currentJob = job.name
+    end
+
     if job.name == 'police' then
-        Wait(1000)
         CacheCurrentOutfit()
-        Wait(500)
+        Wait(1000)
         ApplyPoliceUniform()
-    else
+    elseif currentJob == 'police' and job.name ~= 'police' then
+        -- Player left police job
         Wait(1000)
         RestoreCivilianOutfit()
     end
+
+    currentJob = job.name
 end)
 
 -- Apply if already police on load
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     local Player = QBCore.Functions.GetPlayerData()
-    if Player.job.name == 'police' then
-        Wait(1000)
+    currentJob = Player.job.name
+
+    if currentJob == 'police' then
         CacheCurrentOutfit()
-        Wait(500)
+        Wait(1000)
         ApplyPoliceUniform()
     end
 end)
