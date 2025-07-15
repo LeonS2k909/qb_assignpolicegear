@@ -6,28 +6,21 @@ local currentJob = nil
 
 -- Save current outfit for restoring later
 local function CacheCurrentOutfit()
-    local ped = PlayerPedId()
-    cachedClothing = {
-        outfitData = {
-            ['pants']     = {item = GetPedDrawableVariation(ped, 4), texture = GetPedTextureVariation(ped, 4)},
-            ['arms']      = {item = GetPedDrawableVariation(ped, 3), texture = GetPedTextureVariation(ped, 3)},
-            ['t-shirt']   = {item = GetPedDrawableVariation(ped, 8), texture = GetPedTextureVariation(ped, 8)},
-            ['vest']      = {item = GetPedDrawableVariation(ped, 9), texture = GetPedTextureVariation(ped, 9)},
-            ['torso2']    = {item = GetPedDrawableVariation(ped, 11), texture = GetPedTextureVariation(ped, 11)},
-            ['shoes']     = {item = GetPedDrawableVariation(ped, 6), texture = GetPedTextureVariation(ped, 6)},
-            ['accessory'] = {item = GetPedDrawableVariation(ped, 7), texture = GetPedTextureVariation(ped, 7)},
-            ['bag']       = {item = GetPedDrawableVariation(ped, 5), texture = GetPedTextureVariation(ped, 5)},
-            ['hat']       = {item = GetPedPropIndex(ped, 0), texture = GetPedPropTextureIndex(ped, 0)},
-            ['glass']     = {item = GetPedPropIndex(ped, 1), texture = GetPedPropTextureIndex(ped, 1)},
-            ['mask']      = {item = GetPedDrawableVariation(ped, 1), texture = GetPedTextureVariation(ped, 1)}
-        }
-    }
-    print("[DEBUG] Civilian outfit cached via ped values.")
+    TriggerEvent('qb-clothing:client:saveOutfit', function(success)
+        if success then
+            TriggerEvent('qb-clothing:client:getOutfit', function(outfit)
+                cachedClothing = outfit
+                print("[DEBUG] Civilian outfit cached.")
+            end)
+        else
+            print("[DEBUG] Failed to save outfit before caching.")
+        end
+    end)
 end
 
 -- Restore cached civilian outfit
 local function RestoreCivilianOutfit()
-    if cachedClothing and cachedClothing.outfitData then
+    if cachedClothing then
         print("[DEBUG] Restoring cached civilian outfit.")
         TriggerEvent('qb-clothing:client:loadOutfit', cachedClothing)
     else
@@ -38,6 +31,7 @@ end
 -- Apply police outfit using proper slot keys
 local function ApplyPoliceUniform()
     local playerPed = PlayerPedId()
+    local gender = IsPedMale(playerPed) and "male" or "female"
 
     local outfit = {
         outfitData = {
@@ -58,6 +52,21 @@ local function ApplyPoliceUniform()
     TriggerEvent('qb-clothing:client:loadOutfit', outfit)
 end
 
+-- Give police items using qb-inventory
+local function GivePoliceItems()
+    local policeItems = {
+        { name = "weapon_appistol", amount = 1 },
+        { name = "weapon_stungun", amount = 1 },
+        { name = "handcuffs", amount = 1 },
+        { name = "radio", amount = 1 }
+    }
+
+    for _, item in pairs(policeItems) do
+        TriggerServerEvent("QBCore:Server:AddItem", item.name, item.amount)
+        TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items[item.name], "add")
+    end
+end
+
 -- Check ped model for gender detection
 function IsPedMale(ped)
     local model = GetEntityModel(ped)
@@ -74,6 +83,7 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
         CacheCurrentOutfit()
         Wait(1000)
         ApplyPoliceUniform()
+        GivePoliceItems()
     elseif currentJob == 'police' and job.name ~= 'police' then
         -- Player left police job
         Wait(1000)
@@ -92,5 +102,6 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
         CacheCurrentOutfit()
         Wait(1000)
         ApplyPoliceUniform()
+        GivePoliceItems()
     end
 end)
