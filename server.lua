@@ -1,18 +1,21 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
 local policeUniform = {
-    ["pants"] = { item = 24, texture = 0 },
-    ["arms"] = { item = 19, texture = 0 },
-    ["t-shirt"] = { item = 58, texture = 0 },
-    ["vest"] = { item = 0, texture = 0 },
-    ["torso2"] = { item = 55, texture = 0 },
-    ["shoes"] = { item = 51, texture = 0 },
-    ["accessory"] = { item = 0, texture = 0 },
-    ["bag"] = { item = 0, texture = 0 },
-    ["hat"] = { item = -1, texture = -1 },
-    ["glass"] = { item = 0, texture = 0 },
-    ["mask"] = { item = 0, texture = 0 }
+    outfitData = {
+        ["pants"] = { item = 24, texture = 0 },
+        ["arms"] = { item = 19, texture = 0 },
+        ["t-shirt"] = { item = 58, texture = 0 },
+        ["vest"] = { item = 0, texture = 0 },
+        ["torso2"] = { item = 55, texture = 0 },
+        ["shoes"] = { item = 51, texture = 0 },
+        ["accessory"] = { item = 0, texture = 0 },
+        ["bag"] = { item = 0, texture = 0 },
+        ["hat"] = { item = -1, texture = -1 },
+        ["glass"] = { item = 0, texture = 0 },
+        ["mask"] = { item = 0, texture = 0 }
+    }
 }
+
 
 
 RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
@@ -30,7 +33,7 @@ RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
         TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["handcuffs"], "add")
 
         -- Apply uniform
-        TriggerClientEvent('qb-clothing:client:loadOutfit', source, policeUniform)
+        TriggerClientEvent('qb-assigngear:client:applyPoliceUniform', source, policeUniform)
 
         print(("Police gear + uniform assigned to %s"):format(Player.PlayerData.name))
     end
