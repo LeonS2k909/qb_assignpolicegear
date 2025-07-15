@@ -5,6 +5,6 @@ RegisterNetEvent('qb-assigngear:client:applyPoliceUniform', function(outfit)
         TriggerEvent('qb-clothing:client:loadOutfit', outfit)
         print("✅ Police uniform applied")
     else
-        print("❌ Outfit data was missing or malformed")
+        print("❌ Outfit data missing or malformed")
     end
 end)

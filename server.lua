@@ -1,5 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
+-- Define police uniform
 local policeUniform = {
     outfitData = {
         ["pants"] = { item = 24, texture = 0 },
@@ -16,12 +17,10 @@ local policeUniform = {
     }
 }
 
-
-
 RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
     local Player = QBCore.Functions.GetPlayer(source)
     if Player and job.name == "police" then
-        -- Give gear
+        -- Give items
         Player.Functions.AddItem("WEAPON_STUNGUN", 1)
         Player.Functions.AddItem("WEAPON_APPISTOL", 1)
         Player.Functions.AddItem("radio", 1)
@@ -32,13 +31,9 @@ RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
         TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["radio"], "add")
         TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["handcuffs"], "add")
 
-        -- Apply uniform
+        -- Send uniform to client
         TriggerClientEvent('qb-assigngear:client:applyPoliceUniform', source, policeUniform)
 
-        print(("Police gear + uniform assigned to %s"):format(Player.PlayerData.name))
+        print(("✅ Assigned gear and uniform to %s"):format(Player.PlayerData.name))
     end
 end)
-
-
-
-
