@@ -1,18 +1,41 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
-RegisterNetEvent('qb-policejob:server:OnJobUpdate', function(job)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+local policeUniform = {
+    ["pants"] = { item = 24, texture = 0 },
+    ["arms"] = { item = 19, texture = 0 },
+    ["t-shirt"] = { item = 58, texture = 0 },
+    ["vest"] = { item = 0, texture = 0 },
+    ["torso2"] = { item = 55, texture = 0 },
+    ["shoes"] = { item = 51, texture = 0 },
+    ["accessory"] = { item = 0, texture = 0 },
+    ["bag"] = { item = 0, texture = 0 },
+    ["hat"] = { item = -1, texture = -1 },
+    ["glass"] = { item = 0, texture = 0 },
+    ["mask"] = { item = 0, texture = 0 }
+}
 
+
+RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
+    local Player = QBCore.Functions.GetPlayer(source)
     if Player and job.name == "police" then
-        Player.Functions.AddItem("weapon_stungun", 1)
-        Player.Functions.AddItem("weapon_appistol", 1)
+        -- Give gear
+        Player.Functions.AddItem("WEAPON_STUNGUN", 1)
+        Player.Functions.AddItem("WEAPON_APPISTOL", 1)
         Player.Functions.AddItem("radio", 1)
         Player.Functions.AddItem("handcuffs", 1)
 
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items["weapon_stungun"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items["weapon_appistol"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items["radio"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items["handcuffs"], "add")
+        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_STUNGUN"], "add")
+        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_APPISTOL"], "add")
+        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["radio"], "add")
+        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["handcuffs"], "add")
+
+        -- Apply uniform
+        TriggerClientEvent('qb-clothing:client:loadOutfit', source, policeUniform)
+
+        print(("Police gear + uniform assigned to %s"):format(Player.PlayerData.name))
     end
 end)
+
+
+
+
