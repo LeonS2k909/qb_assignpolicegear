@@ -1,28 +1,43 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
--- Define your police uniform exactly as qb-clothing expects
-local policeUniform = {
-    outfitData = {
-        ["pants"]     = { item = 24, texture = 0 },
-        ["arms"]      = { item = 19, texture = 0 },
-        ["t-shirt"]   = { item = 58, texture = 0 },
-        ["vest"]      = { item = 0,  texture = 0 },
-        ["torso2"]    = { item = 55, texture = 0 },
-        ["shoes"]     = { item = 51, texture = 0 },
-        ["accessory"] = { item = 0,  texture = 0 },
-        ["bag"]       = { item = 0,  texture = 0 },
-        ["hat"]       = { item = -1, texture = -1 },
-        ["glass"]     = { item = 0,  texture = 0 },
-        ["mask"]      = { item = 0,  texture = 0 },
+local PoliceOutfits = {
+    male = {
+        ["t-shirt"]     = { item = 15, texture = 0 },
+        ["torso2"]      = { item = 55, texture = 0 },
+        ["arms"]        = { item = 17, texture = 0 },
+        ["pants"]       = { item = 52, texture = 0 },
+        ["shoes"]       = { item = 25, texture = 0 },
+        ["accessory"]   = { item = 0, texture = 0 },
+        ["bag"]         = { item = 0, texture = 0 },
+        ["hat"]         = { item = 46, texture = 0 },
+    },
+    female = {
+        ["t-shirt"]     = { item = 3, texture = 0 },
+        ["torso2"]      = { item = 48, texture = 0 },
+        ["arms"]        = { item = 14, texture = 0 },
+        ["pants"]       = { item = 34, texture = 0 },
+        ["shoes"]       = { item = 27, texture = 0 },
+        ["accessory"]   = { item = 0, texture = 0 },
+        ["bag"]         = { item = 0, texture = 0 },
+        ["hat"]         = { item = 45, texture = 0 },
     }
 }
 
--- Listen for the client-side job update (this fires AFTER player data is in the client)
+local function ApplyPoliceClothes()
+    local ped = PlayerPedId()
+    local gender = IsPedModel(ped, `mp_m_freemode_01`) and "male" or "female"
+    local outfit = PoliceOutfits[gender]
+    if not outfit then return end
+
+    -- Wrap in loadOutfit2 to support table and safety checks
+    TriggerEvent('qb-clothing:client:loadOutfit2', { outfitData = outfit, outfitName = "police" })
+end
+
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
-    if job and job.name == 'police' then
-        -- Load the uniform into qb-clothing
-        TriggerEvent('qb-clothing:client:loadOutfit', policeUniform)
-        QBCore.Functions.Notify('Police uniform applied', 'success')
-        print('[qb-assignpolicegear] Police uniform loaded')
-    end
+    if job.name == "police" then ApplyPoliceClothes() end
+end)
+
+CreateThread(function()
+    while not QBCore.Functions.GetPlayerData().job do Wait(100) end
+    if QBCore.Functions.GetPlayerData().job.name == "police" then ApplyPoliceClothes() end
 end)
