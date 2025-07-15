@@ -19,21 +19,19 @@ local policeUniform = {
 
 RegisterNetEvent('QBCore:Server:OnJobUpdate', function(source, job)
     local Player = QBCore.Functions.GetPlayer(source)
-    if Player and job.name == "police" then
-        -- Give items
-        Player.Functions.AddItem("WEAPON_STUNGUN", 1)
-        Player.Functions.AddItem("WEAPON_APPISTOL", 1)
-        Player.Functions.AddItem("radio", 1)
-        Player.Functions.AddItem("handcuffs", 1)
+    if not Player or job.name ~= "police" then return end
 
-        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_STUNGUN"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_APPISTOL"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["radio"], "add")
-        TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["handcuffs"], "add")
+    -- Give items
+    Player.Functions.AddItem("WEAPON_STUNGUN", 1)
+    Player.Functions.AddItem("WEAPON_APPISTOL", 1)
+    Player.Functions.AddItem("radio", 1)
+    Player.Functions.AddItem("handcuffs", 1)
 
-        -- Send uniform to client
-        TriggerClientEvent('qb-assigngear:client:applyPoliceUniform', source, policeUniform)
+    TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_STUNGUN"], "add")
+    TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["WEAPON_APPISTOL"], "add")
+    TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["radio"], "add")
+    TriggerClientEvent('inventory:client:ItemBox', source, QBCore.Shared.Items["handcuffs"], "add")
 
-        print(("✅ Assigned gear and uniform to %s"):format(Player.PlayerData.name))
-    end
+    -- Send uniform to client
+    TriggerClientEvent('qb-assigngear:client:applyPoliceUniform', source, policeUniform)
 end)
