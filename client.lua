@@ -1,39 +1,21 @@
--- Script to apply police outfit using qb-clothing correctly
+-- client.lua for qb_assignpolicegear
+
 local QBCore = exports['qb-core']:GetCoreObject()
 
-local cachedClothing = nil -- store civilian outfit before police gear
+local cachedOutfit = nil
 local currentJob = nil
 
--- Save current outfit for restoring later
-local function CacheCurrentOutfit()
-    TriggerEvent('qb-clothing:client:saveOutfit', function(success)
-        if success then
-            TriggerEvent('qb-clothing:client:getOutfit', function(outfit)
-                cachedClothing = outfit
-                print("[DEBUG] Civilian outfit cached.")
-            end)
-        else
-            print("[DEBUG] Failed to save outfit before caching.")
-        end
+-- Save the current outfit
+local function CacheOutfit()
+    TriggerEvent('qb-clothing:client:getOutfit', function(outfit)
+        cachedOutfit = outfit
+        print("[DEBUG] Outfit cached.")
     end)
 end
 
--- Restore cached civilian outfit
-local function RestoreCivilianOutfit()
-    if cachedClothing then
-        print("[DEBUG] Restoring cached civilian outfit.")
-        TriggerEvent('qb-clothing:client:loadOutfit', cachedClothing)
-    else
-        print("[DEBUG] No cached outfit to restore.")
-    end
-end
-
--- Apply police outfit using proper slot keys
+-- Apply police clothing
 local function ApplyPoliceUniform()
-    local playerPed = PlayerPedId()
-    local gender = IsPedMale(playerPed) and "male" or "female"
-
-    local outfit = {
+    local uniform = {
         outfitData = {
             ['pants']     = {texture = 0, item = 24, defaultItem = 0, defaultTexture = 0},
             ['arms']      = {item = 19, texture = 0, defaultItem = 0, defaultTexture = 0},
@@ -49,57 +31,50 @@ local function ApplyPoliceUniform()
         }
     }
 
-    TriggerEvent('qb-clothing:client:loadOutfit', outfit)
+    TriggerEvent('qb-clothing:client:loadOutfit', uniform)
 end
 
--- Give police items using qb-inventory
-local function GivePoliceItems()
-    local policeItems = {
-        { name = "weapon_appistol", amount = 1 },
-        { name = "weapon_stungun", amount = 1 },
-        { name = "handcuffs", amount = 1 },
-        { name = "radio", amount = 1 }
-    }
-
-    for _, item in pairs(policeItems) do
-        TriggerServerEvent("QBCore:Server:AddItem", item.name, item.amount)
-        TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items[item.name], "add")
+-- Restore cached outfit
+local function RestoreOutfit()
+    if cachedOutfit then
+        TriggerEvent('qb-clothing:client:loadOutfit', cachedOutfit)
+        print("[DEBUG] Outfit restored.")
+    else
+        print("[DEBUG] No cached outfit to restore.")
     end
 end
 
--- Check ped model for gender detection
-function IsPedMale(ped)
-    local model = GetEntityModel(ped)
-    return model == GetHashKey("mp_m_freemode_01")
+-- Give police gear from server
+local function GivePoliceItems()
+    TriggerServerEvent("qb-assignpolicegear:server:GivePoliceItems")
 end
 
--- Apply or revert outfits based on job
+-- Handle job change
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
     if currentJob == nil then
         currentJob = job.name
     end
 
-    if job.name == 'police' then
-        CacheCurrentOutfit()
+    if job.name == "police" then
+        CacheOutfit()
         Wait(1000)
         ApplyPoliceUniform()
         GivePoliceItems()
-    elseif currentJob == 'police' and job.name ~= 'police' then
-        -- Player left police job
+    elseif currentJob == "police" and job.name ~= "police" then
         Wait(1000)
-        RestoreCivilianOutfit()
+        RestoreOutfit()
     end
 
     currentJob = job.name
 end)
 
--- Apply if already police on load
+-- Apply on login if police
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     local Player = QBCore.Functions.GetPlayerData()
     currentJob = Player.job.name
 
     if currentJob == 'police' then
-        CacheCurrentOutfit()
+        CacheOutfit()
         Wait(1000)
         ApplyPoliceUniform()
         GivePoliceItems()
