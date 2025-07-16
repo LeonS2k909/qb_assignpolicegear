@@ -1,4 +1,4 @@
--- Script to apply police outfit using qb-clothing correctly
+-- Script to apply police outfit using qb-clothing correctly and give police gear
 local QBCore = exports['qb-core']:GetCoreObject()
 
 local cachedClothing = nil -- store civilian outfit before police gear
@@ -37,8 +37,6 @@ end
 
 -- Apply police outfit using proper slot keys
 local function ApplyPoliceUniform()
-    local playerPed = PlayerPedId()
-
     local outfit = {
         outfitData = {
             ['pants']     = {texture = 0, item = 24, defaultItem = 0, defaultTexture = 0},
@@ -58,10 +56,9 @@ local function ApplyPoliceUniform()
     TriggerEvent('qb-clothing:client:loadOutfit', outfit)
 end
 
--- Check ped model for gender detection
-function IsPedMale(ped)
-    local model = GetEntityModel(ped)
-    return model == GetHashKey("mp_m_freemode_01")
+-- Give police items from server
+local function GivePoliceItems()
+    TriggerServerEvent("qb-assignpolicegear:server:GivePoliceItems")
 end
 
 -- Apply or revert outfits based on job
@@ -74,8 +71,8 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
         CacheCurrentOutfit()
         Wait(1000)
         ApplyPoliceUniform()
+        GivePoliceItems()
     elseif currentJob == 'police' and job.name ~= 'police' then
-        -- Player left police job
         Wait(1000)
         RestoreCivilianOutfit()
     end
@@ -92,5 +89,6 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
         CacheCurrentOutfit()
         Wait(1000)
         ApplyPoliceUniform()
+        GivePoliceItems()
     end
 end)
